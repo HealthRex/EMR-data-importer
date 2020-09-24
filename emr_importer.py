@@ -1,31 +1,78 @@
+from datetime import datetime
+from google.cloud import bigquery
 import json
+import os
 from pathlib import Path
 
 class Importer():
-    def __init__(self, config):
-        with open(config) as f:
-            j = json.loads(f.read())
-        self.endpoint = j['endpoint']
-        self.query = j['query']
-        self.results_fname = j['results']
+    def __init__(self, gcloud_credentials, gcloud_project, query=None, results=None):
+        '''set object data and connect with the service'''
+        self.query = query
+        self.results_fname = results
+
+        # todo: find out if better way of setting the credentials
+        os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = gcloud_credentials
+        os.environ['GCLOUD_PROJECT'] = gcloud_project
         
         self._connect()
 
     def _connect(self):
-        print("todo: write connection code")
+        '''connect with BigQuery'''
+        self.client = bigquery.Client()
 
-    def _execute(self):
-        print("todo: write execution code")
+    def _execute(self, query=None):
+        '''execute the SQL and save to a dataframe'''
+        if query:
+            self.query = query
+        if not self.query:
+            raise Exception("Query must be specified")
+        print("executing SQL query:")
+        print(self.query)
+        query_job = self.client.query(self.query)
+        self.df = query_job.to_dataframe(progress_bar_type='tqdm')
+        # self.result = [dict(row) for row in query_job.result()]
+        print("query got", len(self.df), "rows")
 
     def _transform(self):
-        print("todo: write transformation code")
+        '''transform the dataframe into the specified object structure, then serialize into a JSON string
+        {
+            date_of_execution: <date>, 
+            query: <query that was passed in>,
+            records: [
+                {id: 0, label: <ground truth label>, data: <whatever json results, can be any structure as long as consistent across rows>},
+                {id: 1, label: <ground truth label>, data: <see above>},
+                ...
+            ]
+        }
+        '''
 
-    def run(self):
+        new_object = {
+            "date_of_execution": datetime.utcnow().timestamp(),
+            "query": self.query, 
+            "records": [{ "id": i, "label": self._serialize_keys(row), "data": self._serialize_values(row) } for i,row in self.df.iterrows()]
+        }
+
+        return json.dumps(new_object)
+
+    def _serialize_keys(self, row):
+        return list(row.index)
+
+    def _serialize_values(self, row):
+        '''rely on pandas to serialize all datatypes that BigQuery returns (eg Decimal, date, etc)'''
+        return list(json.loads(row.to_json()).values())
+
+    def run(self, query=None, results=None):
         '''function for executing the given SQL query and returning the transformed data'''
-        self._execute()
-        self._transform()
+        self._execute(self.query)
+        j = self._transform()
+
+        if results:
+            self.results_fname = results
+        if not self.results_fname:
+            self.results_fname = "results.json"
+
         with open(self.results_fname, 'w') as f:
-            f.write('{}')
+            f.write(j)
         return Path(self.results_fname)
 
 if __name__=="__main__":
@@ -36,6 +83,11 @@ if __name__=="__main__":
 
     args = parser.parse_args()
 
-    imp = Importer(args.config)
+    with open(args.config) as f:
+        config = json.loads(f.read())
+    imp = Importer(**config)
     path = imp.run()
-    print("Results at", path)
+    # imp._execute()
+    # print(imp.result)
+    # imp.result.to_json(imp.results_fname)
+    # print("Results at", path)

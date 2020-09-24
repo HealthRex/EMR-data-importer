@@ -1,30 +1,35 @@
 import emr_importer
 import unittest
 
+class DataImporterTest(unittest.TestCase):
+    def setUp(self):
+        with open("test-config.json") as f:
+            self.config = json.loads(f.read())
+        self.importer = Importer(
+            gcloud_credentials = self.config["gcloud_credentials"], 
+            gcloud_project = self.config["gcloud_project"]
+        )
+
 class TestDatabaseConnection(unittest.TestCase):
     '''Load several example config files to test for proper connection success / fail responses'''
-    def setUp(self):
-        pass
-
     def test_connection(self):
-        pass
+        self.importer._connect()
 
 class TestSQLExecution(unittest.TestCase):
     '''Test various SQL commands that are expected to succeed or fail'''
-    def setUp(self):
-        pass
-
-    def test_sql(self):
-        pass
-
-class TestDataTranformation(unittest.TestCase):
+    def test_all_tables(self):
+        for db in config["databases"]:
+            for table in config["tables"]:
+                sql = f'SELECT * FROM {db}.{table} LIMIT 1;'
+                self.importer._execute(sql)
+    
+class TestDataTranformation(DataImporterTest):
     '''Given data in the form of a database response, test that it transforms into the expected format'''
-    def setUp(self):
-        pass
-
     # to test: data in valid format? data in readable json after run() completed?
     def test_transform(self):
-        pass
+        bq_results = [
+
+        ]
 
 def suite():
     """Returns the suite of tests to run for this test class / module.
