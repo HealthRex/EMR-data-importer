@@ -22,14 +22,12 @@ class TestSQLExecution(unittest.TestCase):
             for table in config["tables"]:
                 sql = f'SELECT * FROM {db}.{table} LIMIT 1;'
                 self.importer._execute(sql)
-    
+
 class TestDataTranformation(DataImporterTest):
     '''Given data in the form of a database response, test that it transforms into the expected format'''
     # to test: data in valid format? data in readable json after run() completed?
     def test_transform(self):
-        bq_results = [
-
-        ]
+        pass
 
 def suite():
     """Returns the suite of tests to run for this test class / module.

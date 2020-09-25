@@ -3,6 +3,8 @@ from google.cloud import bigquery
 import json
 import os
 from pathlib import Path
+from tqdm import tqdm
+
 
 class Importer():
     def __init__(self, gcloud_credentials, gcloud_project, query=None, results=None):
@@ -26,11 +28,9 @@ class Importer():
             self.query = query
         if not self.query:
             raise Exception("Query must be specified")
-        print("executing SQL query:")
-        print(self.query)
+        print("executing SQL query:", self.query)
         query_job = self.client.query(self.query)
         self.df = query_job.to_dataframe(progress_bar_type='tqdm')
-        # self.result = [dict(row) for row in query_job.result()]
         print("query got", len(self.df), "rows")
 
     def _transform(self):
@@ -49,7 +49,7 @@ class Importer():
         new_object = {
             "date_of_execution": datetime.utcnow().timestamp(),
             "query": self.query, 
-            "records": [{ "id": i, "label": self._serialize_keys(row), "data": self._serialize_values(row) } for i,row in self.df.iterrows()]
+            "records": [{ "id": i, "label": self._serialize_keys(row), "data": self._serialize_values(row) } for i,row in tqdm(self.df.iterrows(), total=len(self.df))]
         }
 
         return json.dumps(new_object)
@@ -87,7 +87,4 @@ if __name__=="__main__":
         config = json.loads(f.read())
     imp = Importer(**config)
     path = imp.run()
-    # imp._execute()
-    # print(imp.result)
-    # imp.result.to_json(imp.results_fname)
-    # print("Results at", path)
+    print("Results at", path)
