@@ -1,25 +1,27 @@
-import emr_importer
+from emr_importer import Importer 
+import json
 import unittest
 
 class DataImporterTest(unittest.TestCase):
     def setUp(self):
         with open("test-config.json") as f:
             self.config = json.loads(f.read())
-        self.importer = Importer(
-            gcloud_credentials = self.config["gcloud_credentials"], 
-            gcloud_project = self.config["gcloud_project"]
-        )
+        self.importer = Importer(database_type="bigquery", credentials={
+            "gcloud_credentials": self.config["gcloud_credentials"], 
+            "gcloud_project": self.config["gcloud_project"]
+        })
 
 class TestDatabaseConnection(unittest.TestCase):
     '''Load several example config files to test for proper connection success / fail responses'''
     def test_connection(self):
-        self.importer._connect()
+        # self.importer
+        pass
 
-class TestSQLExecution(unittest.TestCase):
+class TestSQLExecution(DataImporterTest):
     '''Test various SQL commands that are expected to succeed or fail'''
     def test_all_tables(self):
-        for db in config["databases"]:
-            for table in config["tables"]:
+        for db in self.config["databases"]:
+            for table in self.config["tables"]:
                 sql = f'SELECT * FROM {db}.{table} LIMIT 1;'
                 self.importer._execute(sql)
 
