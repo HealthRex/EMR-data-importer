@@ -19,7 +19,7 @@ except:
             config = json.loads(f.read())
     except Exception as e:
             raise Exception("No config file found in package directory or specified on command line") from e
-else:
-    imp = Importer(**config)
-    path = imp.run()
-    print("Results at", path)
+
+imp = Importer(**config)
+path = imp.run()
+print("Results at", path)
