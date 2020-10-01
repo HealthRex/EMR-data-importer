@@ -5,7 +5,7 @@ import os
 from pathlib import Path
 from tqdm import tqdm
 
-from db_client import Client
+from .db_client import Client
 
 class Importer():
     def __init__(self, database_type, credentials, label_extractor=None, client=None, query=None, results=None):
