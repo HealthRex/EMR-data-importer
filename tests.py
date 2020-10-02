@@ -35,6 +35,12 @@ class TestSQLExecution(DataImporterTest):
 class TestDataTranformation(DataImporterTest):
     '''Given data in the form of a database response, test that it transforms into the expected format'''
     # to test: data in valid format? data in readable json after run() completed?
+    def test_label_extractor_test(self):
+        importer = Importer(database_type="bigquery", label_extractor="label_extractor", credentials={
+            "gcloud_credentials": self.config["gcloud_credentials"], 
+            "gcloud_project": self.config["gcloud_project"]
+        })
+
     def test_transform(self):
         pass
 
