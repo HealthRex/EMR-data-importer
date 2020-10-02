@@ -18,12 +18,6 @@ class DataImporterTest(unittest.TestCase):
     def test_open_config(self):
         open_config()
 
-class TestDatabaseConnection(unittest.TestCase):
-    '''Load several example config files to test for proper connection success / fail responses'''
-    def test_connection(self):
-        # self.importer
-        pass
-
 class TestSQLExecution(DataImporterTest):
     '''Test various SQL commands that are expected to succeed or fail'''
     def test_all_tables(self):
@@ -40,9 +34,6 @@ class TestDataTranformation(DataImporterTest):
             "gcloud_credentials": self.config["gcloud_credentials"], 
             "gcloud_project": self.config["gcloud_project"]
         })
-
-    def test_transform(self):
-        pass
 
 class TestRun(DataImporterTest):
     def test_run(self):
