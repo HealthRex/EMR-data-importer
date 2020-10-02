@@ -5,14 +5,16 @@ import os
 from pathlib import Path
 from tqdm import tqdm
 
-from .db_client import Client
+from db_client import Client
 
 class Importer():
     def __init__(self, database_type, credentials, label_extractor=None, client=None, query=None, results=None):
         '''set object data and connect with the service'''
         self.query = query
-        self.results_fname = results
-        
+        if results:
+            self.results_fname = results
+        else:
+            self.results_fname = 'results.json'    
         if not client:
             client = Client(database_type, credentials)
         self.client = client
@@ -50,19 +52,31 @@ class Importer():
         '''rely on pandas to serialize all datatypes that BigQuery returns (eg Decimal, date, etc)'''
         return list(json.loads(row.to_json()).values())
 
-    def run(self, query=None, results=None):
+    def run(self, query=None):
         '''function for executing the given SQL query and returning the transformed data'''
+        if query:
+            self.query = query
         self._execute(self.query)
         j = self._transform()
-
-        if results:
-            self.results_fname = results
-        if not self.results_fname:
-            self.results_fname = "results.json"
 
         with open(self.results_fname, 'w') as f:
             f.write(j)
         return Path(self.results_fname)
+
+def open_config(args=None):
+    try:
+        with open(args.config) as f:
+            config = json.loads(f.read())
+            print("loaded", args.config)
+    except:
+        try:
+            with open(os.path.join(os.path.dirname(__file__),"config.json"), 'r') as f:
+                config = json.loads(f.read())
+                print("loaded", os.path.join(os.path.dirname(__file__),"config.json"))
+        except Exception as e:
+                raise Exception("No config file found in package directory or specified on command line") from e
+    if 'credentials' not in config:
+        raise Exception("'credentials' parameter required in config file")
 
 if __name__=="__main__":
     print("Running importer")
@@ -71,9 +85,8 @@ if __name__=="__main__":
     parser.add_argument('--config', help='the location of the config file', required=True)
 
     args = parser.parse_args()
+    config = open_config(args)
 
-    with open(args.config) as f:
-        config = json.loads(f.read())
     imp = Importer(**config)
     path = imp.run()
     print("Results at", path)

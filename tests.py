@@ -1,5 +1,6 @@
-from emr_importer import Importer 
+from emr_importer import Importer, open_config
 import json
+import os
 import unittest
 
 class DataImporterTest(unittest.TestCase):
@@ -10,6 +11,12 @@ class DataImporterTest(unittest.TestCase):
             "gcloud_credentials": self.config["gcloud_credentials"], 
             "gcloud_project": self.config["gcloud_project"]
         })
+
+    def test_config_file_exists(self):
+        self.assertTrue(os.path.exists('config.json'))
+
+    def test_open_config(self):
+        open_config()
 
 class TestDatabaseConnection(unittest.TestCase):
     '''Load several example config files to test for proper connection success / fail responses'''
@@ -31,17 +38,11 @@ class TestDataTranformation(DataImporterTest):
     def test_transform(self):
         pass
 
-def suite():
-    """Returns the suite of tests to run for this test class / module.
-    Use unittest.makeSuite methods which simply extracts all of the
-    methods for the given class whose name starts with "test"
-    """
-    suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(TestDatabaseConnection))
-    suite.addTest(unittest.makeSuite(TestSQLExecution))
-    suite.addTest(unittest.makeSuite(TestDataTranformation))
-    
-    return suite
-    
+class TestRun(DataImporterTest):
+    def test_run(self):
+        db = self.config["databases"][0]
+        table = self.config["tables"][0]
+        self.importer.run(f'SELECT * FROM {db}.{table} LIMIT 1;')
+
 if __name__=="__main__":
-    unittest.TextTestRunner(verbosity=2).run(suite())
+    unittest.main()
