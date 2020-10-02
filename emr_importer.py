@@ -22,6 +22,11 @@ class Importer():
         # allows the user to specify a script to get the ground truth
         if label_extractor is not None:
             self.get_row_label = importlib.import_module(label_extractor).get_row_label
+            from pandas import Series
+            try:
+                json.dumps(self.get_row_label(Series([1,2,3])))
+            except Exception as e:
+                raise Exception("label extractor must handle input type of pandas.Series and output a json-serializable object")
         else:
             self.get_row_label = self._make_indices_list
 
