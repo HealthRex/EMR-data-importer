@@ -14,7 +14,7 @@ class Importer():
         if results:
             self.results_fname = results
         else:
-            self.results_fname = 'results.json'    
+            self.results_fname = 'results.json'
         if not client:
             client = Client(database_type, credentials)
         self.client = client
@@ -45,7 +45,7 @@ class Importer():
         '''transform the dataframe into a structured object, then serialize into a JSON string'''
         new_object = {
             "date_of_execution": datetime.utcnow().timestamp(),
-            "query": self.query, 
+            "query": self.query,
             "records": [{ "id": i, "label": self.get_row_label(row), "data": self._serialize_values(row) } for i,row in tqdm(self.df.iterrows(), total=len(self.df))]
         }
         return json.dumps(new_object)
@@ -75,19 +75,21 @@ def open_config(args=None):
             print("loaded", args.config)
     except:
         try:
-            with open(os.path.join(os.path.dirname(__file__),"config.json"), 'r') as f:
+            fname = os.path.join(os.path.dirname(__file__),"config.json")
+            with open(fname, 'r') as f:
                 config = json.loads(f.read())
-                print("loaded", os.path.join(os.path.dirname(__file__),"config.json"))
+                print("loaded", fname)
         except Exception as e:
                 raise Exception("No config file found in package directory or specified on command line") from e
     if 'credentials' not in config:
         raise Exception("'credentials' parameter required in config file")
+    return config
 
 if __name__=="__main__":
     print("Running importer")
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument('--config', help='the location of the config file', required=True)
+    parser.add_argument('--config', help='the location of the config file', required=False)
 
     args = parser.parse_args()
     config = open_config(args)
