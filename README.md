@@ -15,3 +15,39 @@ The config file credentials object should have two entries in it: `gcloud_projec
 ### Custom client
 
 The Importer accepts a custom Client object, which should have a query function that takes in a SQL query and returns a pandas dataframe.
+
+## Examples
+
+Get the top N rows from any table:
+
+```SELECT * FROM `bigquery-public-data.cms_synthetic_patient_data_omop.{table}` LIMIT {n}```
+
+Join together three tables on `person_id` while selecting specific columns:
+
+```
+SELECT SELECT observation.*, condition.condition_type_concept_id, procedure.procedure_type_concept_id
+FROM 
+`bigquery-public-data.cms_synthetic_patient_data_omop.condition_occurrence` AS condition
+INNER JOIN
+`bigquery-public-data.cms_synthetic_patient_data_omop.observation_period` AS observation
+ON
+observation.person_id = condition.person_id
+INNER JOIN
+`bigquery-public-data.cms_synthetic_patient_data_omop.procedure_occurrence` AS procedure
+ON procedure.person_id = observation.person_id
+```
+
+Suppose we wanted to take some of the values from the BigQuery results and train a model to predict patient observation days. For the query above, we can use the following functions for serializing the data:
+
+```
+def get_row_label(row):
+    return (row.observation_period_end_date - row.observation_period_start_date).days
+
+def get_row_value(row):
+    columns = ['condition_type_concept_id', 'procedure_type_concept_id']
+    return list(json.loads(row[columns].to_json()).values())
+```
+
+## Notes
+
+When joining multiple tables, you will need to exclude duplicate columns (see [this StackOverflow question](https://stackoverflow.com/questions/53779191/bigquery-duplicate-column-names)). 

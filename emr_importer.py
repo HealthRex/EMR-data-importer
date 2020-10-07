@@ -21,12 +21,16 @@ class Importer():
 
         # allows the user to specify a script to get the ground truth
         if label_extractor is not None:
-            self.get_row_label = importlib.import_module(label_extractor).get_row_label
-            from pandas import Series
             try:
-                json.dumps(self.get_row_label(Series([1,2,3])))
-            except Exception as e:
-                raise Exception("label extractor must handle input type of pandas.Series and output a json-serializable object")
+                self.get_row_label = importlib.import_module(label_extractor).get_row_label
+            except:
+                print("could not import function get_row_label, using default")
+                self.get_row_label = self._make_indices_list
+            try:
+                self.get_row_value = importlib.import_module(label_extractor).get_row_value
+            except:
+                print("could not import function get_row_value, using default")
+                self.get_row_value = self._serialize_values
         else:
             self.get_row_label = self._make_indices_list
 
@@ -64,8 +68,8 @@ class Importer():
         self._execute(self.query)
         j = self._transform()
 
-        with open(self.results_fname, 'w') as f:
-            f.write(j)
+        # with open(self.results_fname, 'w') as f:
+        #     f.write(j)
         return Path(self.results_fname)
 
 def open_config(args=None):
