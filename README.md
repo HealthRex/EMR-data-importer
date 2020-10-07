@@ -2,6 +2,10 @@
 
 Pulls structured EMR data from an OMOP database using a given SQL query, and returns the results in a structured JSON file.
 
+## Installing
+
+Create a virtual environment and install the dependencies from the requirements file. Then set up your config file depending on which database you'll be pulling from. To run the importer from the command line, run `python emr_importer.py --config=<config file>`. 
+
 ## Extracting labels
 
 The JSON response contains a series of pairs of `label` and `data`. By default, the label is computed from the response dataframe to be the given row's column names. A custom script can also be passed in through the config file by specifying the name of the file (without the .py), which should contain a function called `get_row_labels` that accepts a pandas Series and returns a JSON-serializable object.
@@ -28,7 +32,7 @@ Get the top N rows from any table:
 Join together three tables on `person_id` while selecting specific columns:
 
 ```
-SELECT SELECT observation.*, condition.condition_type_concept_id, procedure.procedure_type_concept_id
+SELECT observation.*, condition.condition_type_concept_id, procedure.procedure_type_concept_id
 FROM 
 `bigquery-public-data.cms_synthetic_patient_data_omop.condition_occurrence` AS condition
 INNER JOIN
@@ -40,7 +44,7 @@ INNER JOIN
 ON procedure.person_id = observation.person_id
 ```
 
-Suppose we wanted to take some of the values from the BigQuery results and train a model to predict patient observation days. For the query above, we can use the following functions for serializing the data:
+Suppose we wanted to take some of the values from the BigQuery results and train a model to predict patient observation days. For the query above, we can put the following functions in label_extractor.py for serializing the data:
 
 ```
 def get_row_label(row):
@@ -53,4 +57,4 @@ def get_row_value(row):
 
 ## Notes
 
-When joining multiple tables, you will need to exclude duplicate columns (see [this StackOverflow question](https://stackoverflow.com/questions/53779191/bigquery-duplicate-column-names)). 
+When joining multiple tables, you will need to exclude duplicate columns (see [this StackOverflow question](https://stackoverflow.com/questions/53779191/bigquery-duplicate-column-names)).
