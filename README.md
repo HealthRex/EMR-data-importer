@@ -18,6 +18,9 @@ The Importer accepts a custom Client object, which should have a query function 
 
 ## Examples
 
+The following examples use the `bigquery-public-data` "Synthetic Patient Data in OMOP"
+dataset provided by the [GCP Marketplace](https://console.cloud.google.com/marketplace/browse?filter=category:health). `bigquery-public-data` must be added to the BigQuery-enabled GCP project that the config file refers to.
+
 Get the top N rows from any table:
 
 ```SELECT * FROM `bigquery-public-data.cms_synthetic_patient_data_omop.{table}` LIMIT {n}```
