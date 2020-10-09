@@ -1,7 +1,7 @@
 {
     "query": "SELECT * FROM database.table LIMIT 100;",
     "results": "results.json",
-    "database_type": "bigquery",
+    "database_type": "dummy",
     "credentials": {
         "gcloud_project": "my-gcloud-project",
         "gcloud_credentials": "/my/credentials/path.json"
