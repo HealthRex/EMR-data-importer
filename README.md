@@ -16,6 +16,14 @@ The JSON response contains a series of pairs of `label` and `data`. By default, 
 
 The config file credentials object should have two entries in it: `gcloud_project`, the project to connect to on Google Cloud Platform, and `gcloud_credentials`, the JSON credentials file that's generated when a user goes through the [authentication](https://cloud.google.com/docs/authentication) with Google Cloud Platform.
 
+### SQLite
+
+Requires the `sqlite3` Python package. Instead of a `credentials` object in the config JSON, pass in a `filename` string.
+
+### CSV files
+
+Requires the `sqlite3` Python package to process SQL queries. Otherwise with an empty string or missing `query` in the config file, this will return the entire table. For SQL queries, the table name must match the filename without the extension (and the filename can only have a limited charset, no '-' or '.').
+
 ### Custom client
 
 The Importer accepts a custom Client object, which should have a query function that takes in a SQL query and returns a pandas dataframe.
