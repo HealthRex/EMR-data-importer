@@ -38,11 +38,12 @@ class Importer():
         '''execute the SQL and save to a dataframe'''
         if query:
             self.query = query
-        if not self.query:
-            raise Exception("Query must be specified")
-        print("executing SQL query:", self.query)
+        if not self.query and self.client.type != 'csv':
+            raise Exception("Query must be specified unless importing CSV data")
+        if self.query:
+            print("executing SQL query:", self.query)
         self.df = self.client.query(self.query)
-        print("query got", len(self.df), "rows")
+        print("got", len(self.df), "rows")
 
     def _transform(self):
 
