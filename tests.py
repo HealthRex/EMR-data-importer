@@ -1,11 +1,12 @@
 from emr_importer import Importer, open_config
+from db_client import Client
 import json
 import os
 import unittest
 
-class DataImporterTest(unittest.TestCase):
+class BigqueryTest(unittest.TestCase):
     def setUp(self):
-        with open("test-config.json") as f:
+        with open("test_config.json") as f:
             self.config = json.loads(f.read())
         self.importer = Importer(database_type="bigquery", credentials={
             "gcloud_credentials": self.config["gcloud_credentials"], 
@@ -18,15 +19,7 @@ class DataImporterTest(unittest.TestCase):
     def test_open_config(self):
         open_config()
 
-class TestSQLExecution(DataImporterTest):
-    '''Test various SQL commands that are expected to succeed or fail'''
-    def test_all_tables(self):
-        for db in self.config["databases"]:
-            for table in self.config["tables"]:
-                sql = f'SELECT * FROM {db}.{table} LIMIT 1;'
-                self.importer._execute(sql)
-
-class TestDataTranformation(DataImporterTest):
+class TestDataTranformation(BigqueryTest):
     '''Given data in the form of a database response, test that it transforms into the expected format'''
     # to test: data in valid format? data in readable json after run() completed?
     def test_label_extractor_test(self):
@@ -35,11 +28,48 @@ class TestDataTranformation(DataImporterTest):
             "gcloud_project": self.config["gcloud_project"]
         })
 
-class TestRun(DataImporterTest):
+class TestRun(BigqueryTest):
     def test_run(self):
         db = self.config["databases"][0]
         table = self.config["tables"][0]
-        self.importer.run(f'SELECT * FROM {db}.{table} LIMIT 1;')
+        query = f'SELECT * FROM {db}.{table} LIMIT 1;'
+        print(f"query: '{query}'")
+        self.importer.run(query)
+
+class TestClientInstantiation(unittest.TestCase):
+    def test_csv(self):
+        with self.assertRaises(Exception):
+            client = Client('csv')
+        client = Client('csv', filename='test.csv')
+
+    def test_sqlite(self):
+        with self.assertRaises(Exception):
+            client = Client('sqlite')
+        client = Client('sqlite', filename='test.sqlite')
+
+    def test_dummy(self):
+        client = Client('dummy')
+
+    def test_nonexistant(self):
+        with self.assertRaises(Exception):
+            client = Client("dne")
+
+class TestClientQuery(unittest.TestCase):
+    def setUp(self):
+        self.dummy_client = Client('dummy', filename='test.csv')
+        self.csv_client = Client('csv', filename='test.csv')
+        self.sqlite_client = Client('sqlite', filename='test.sqlite')
+
+    def test_csv(self):
+        self.csv_client.query()
+        self.csv_client.query("SELECT * FROM test LIMIT 1;")
+
+    def test_sqlite(self):
+        self.sqlite_client.query("SELECT * FROM test LIMIT 1;")
+
+    def test_dummy(self):
+        self.dummy_client.query()
+        self.dummy_client.query("SELECT * FROM test LIMIT 1;")
 
 if __name__=="__main__":
     unittest.main()
