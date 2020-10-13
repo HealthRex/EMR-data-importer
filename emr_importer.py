@@ -8,7 +8,7 @@ from tqdm import tqdm
 from db_client import Client
 
 class Importer():
-    def __init__(self, database_type, credentials, label_extractor=None, client=None, query=None, results=None):
+    def __init__(self, database_type, credentials=None, filename=None, label_extractor=None, client=None, query=None, results=None):
         '''set object data and connect with the service'''
         self.query = query
         if results:
@@ -16,7 +16,7 @@ class Importer():
         else:
             self.results_fname = 'results.json'
         if not client:
-            client = Client(database_type, credentials)
+            client = Client(database_type, credentials, filename)
         self.client = client
 
         # allows the user to specify a script to get the ground truth
@@ -68,8 +68,8 @@ class Importer():
         self._execute(self.query)
         j = self._transform()
 
-        # with open(self.results_fname, 'w') as f:
-        #     f.write(j)
+        with open(self.results_fname, 'w') as f:
+            f.write(j)
         return Path(self.results_fname)
 
 def open_config(args=None):
@@ -85,7 +85,7 @@ def open_config(args=None):
                 print("loaded", fname)
         except Exception as e:
                 raise Exception("No config file found in package directory or specified on command line") from e
-    if 'credentials' not in config:
+    if config['database_type'] in ['bigquery'] and 'credentials' not in config:
         raise Exception("'credentials' parameter required in config file")
     return config
 

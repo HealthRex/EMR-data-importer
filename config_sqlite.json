@@ -1,0 +1,6 @@
+{
+    "query": "SELECT * FROM observation_period LIMIT 100;",
+    "results": "results.json",
+    "database_type": "sqlite",
+    "filename": "bigquery-public-datasets.sqlite"
+}
