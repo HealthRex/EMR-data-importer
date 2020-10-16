@@ -52,6 +52,10 @@ def get_row_value(row):
     return list(json.loads(row[columns].to_json()).values())
 ```
 
+## Testing
+
+You will need a test_config.json file, which can be made by copying the test_config_example.json file. 
+
 ## Notes
 
 If not given a config file as a parameter, the importer will look in the root folder for one.

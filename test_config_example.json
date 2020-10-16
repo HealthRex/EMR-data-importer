@@ -1,0 +1,6 @@
+{
+    "gcloud_credentials": "",
+    "gcloud_project": "",
+    "databases": ["bigquery-public-data.cms_synthetic_patient_data_omop"],
+    "tables": ["observation_period"]
+}
