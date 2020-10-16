@@ -85,7 +85,13 @@ def open_config(args=None):
                 config = json.loads(f.read())
                 print("loaded", fname)
         except Exception as e:
-                raise Exception("No config file found in package directory or specified on command line") from e
+            try:
+                fname = os.path.join(os.path.dirname(__file__),"configs/config.json")
+                with open(fname, 'r') as f:
+                    config = json.loads(f.read())
+                    print("loaded", fname)
+            except Exception as e:
+                raise Exception("No config file found in package directory, config directory, or specified on command line") from e
     if config['database_type'] in ['bigquery'] and 'credentials' not in config:
         raise Exception("'credentials' parameter required in config file")
     return config

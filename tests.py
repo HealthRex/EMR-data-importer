@@ -14,7 +14,7 @@ class BigqueryTest(unittest.TestCase):
         })
 
     def test_config_file_exists(self):
-        self.assertTrue(os.path.exists('config.json'))
+        self.assertTrue(os.path.exists('config.json') or os.path.exists('configs/config.json'))
 
     def test_open_config(self):
         open_config()

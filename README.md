@@ -33,24 +33,13 @@ The Importer accepts a custom Client object, which should have a query function 
 The following examples use the `bigquery-public-data` "Synthetic Patient Data in OMOP"
 dataset provided by the [GCP Marketplace](https://console.cloud.google.com/marketplace/browse?filter=category:health). `bigquery-public-data` must be added to the BigQuery-enabled GCP project that will go in the config file as the `gcloud_project` parameter.
 
-Get the top N rows from any table:
+### 1. Get the top 100 rows from `procedure_occurrence`:
 
-```SELECT * FROM `bigquery-public-data.cms_synthetic_patient_data_omop.{table}` LIMIT {n}```
+```SELECT * FROM `bigquery-public-data.cms_synthetic_patient_data_omop.procedure_occurrence` LIMIT 100;```
 
-Join together three tables on `person_id` while selecting specific columns:
+### 2. Join together three tables on `person_id` while selecting specific columns:
 
-```
-SELECT observation.*, condition.condition_type_concept_id, procedure.procedure_type_concept_id
-FROM 
-`bigquery-public-data.cms_synthetic_patient_data_omop.condition_occurrence` AS condition
-INNER JOIN
-`bigquery-public-data.cms_synthetic_patient_data_omop.observation_period` AS observation
-ON
-observation.person_id = condition.person_id
-INNER JOIN
-`bigquery-public-data.cms_synthetic_patient_data_omop.procedure_occurrence` AS procedure
-ON procedure.person_id = observation.person_id
-```
+```SELECT observation.*, condition.condition_type_concept_id, procedure.procedure_type_concept_id FROM `bigquery-public-data.cms_synthetic_patient_data_omop.condition_occurrence` AS condition INNER JOIN `bigquery-public-data.cms_synthetic_patient_data_omop.observation_period` AS observation ON observation.person_id = condition.person_id INNER JOIN `bigquery-public-data.cms_synthetic_patient_data_omop.procedure_occurrence` AS procedure ON procedure.person_id = observation.person_id LIMIT 100;```
 
 Suppose we wanted to take some of the values from the BigQuery results and train a model to predict patient observation days. For the query above, we can put the following functions in label_extractor.py for serializing the data:
 
@@ -64,5 +53,7 @@ def get_row_value(row):
 ```
 
 ## Notes
+
+If not given a config file as a parameter, the importer will look in the root folder for one.
 
 When joining multiple tables, you will need to exclude duplicate columns (see [this StackOverflow question](https://stackoverflow.com/questions/53779191/bigquery-duplicate-column-names)).
