@@ -37,6 +37,8 @@ dataset provided by the [GCP Marketplace](https://console.cloud.google.com/marke
 
 ```SELECT * FROM `bigquery-public-data.cms_synthetic_patient_data_omop.procedure_occurrence` LIMIT 100;```
 
+The results should be the same as those found in `results/results_query1.json`.
+
 ### 2. Join together three tables on `person_id` while selecting specific columns:
 
 ```SELECT observation.*, condition.condition_type_concept_id, procedure.procedure_type_concept_id FROM `bigquery-public-data.cms_synthetic_patient_data_omop.condition_occurrence` AS condition INNER JOIN `bigquery-public-data.cms_synthetic_patient_data_omop.observation_period` AS observation ON observation.person_id = condition.person_id INNER JOIN `bigquery-public-data.cms_synthetic_patient_data_omop.procedure_occurrence` AS procedure ON procedure.person_id = observation.person_id LIMIT 100;```
@@ -51,6 +53,8 @@ def get_row_value(row):
     columns = ['condition_type_concept_id', 'procedure_type_concept_id']
     return list(json.loads(row[columns].to_json()).values())
 ```
+
+The results should be the same as those found in `results/results_query2.json`.
 
 ## Testing
 
